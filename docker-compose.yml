@@ -1,0 +1,37 @@
+version: "3"
+
+services:
+  app-container:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    image: example-rabbitmq
+    ports:
+      - '8080:8080'
+    environment:      
+      - SPRING_RABBITMQ_HOST=rabbitmq-container
+    depends_on:
+      - rabbitmq-container
+    hostname: myapphost
+    networks:
+      - rabbitnet
+      
+  rabbitmq-container:
+    image: rabbitmq:3-management
+    hostname: rabbithost
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+      - ./rabbitmq/rabbitmq.config:/etc/rabbitmq/rabbitmq.config:ro
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=secret_pass
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    networks:
+      - rabbitnet
+      
+networks:
+  rabbitnet:
+    driver: bridge     
